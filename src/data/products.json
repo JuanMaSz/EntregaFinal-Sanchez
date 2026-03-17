@@ -1,0 +1,24 @@
+[
+  {
+    "id": "1773789637860",
+    "title": "Comilona",
+    "description": "test",
+    "code": "abc",
+    "price": 91.218,
+    "status": true,
+    "stock": 10,
+    "category": "general",
+    "thumbnails": []
+  },
+  {
+    "id": "1773789656078",
+    "title": "Gaseosa",
+    "description": "test",
+    "code": "abc",
+    "price": 2.668,
+    "status": true,
+    "stock": 10,
+    "category": "general",
+    "thumbnails": []
+  }
+]
