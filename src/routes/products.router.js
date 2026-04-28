@@ -1,38 +1,89 @@
 import { Router } from "express";
-import ProductManager from "../managers/ProductManager.js";
+import Product from "../models/Product.js";
 
 export default (io) => {
   const router = Router();
-  const manager = new ProductManager("./src/data/products.json");
 
+  
   router.get("/", async (req, res) => {
-    res.json(await manager.getProducts());
+    try {
+      let { limit = 10, page = 1, sort, query } = req.query;
+
+      const filter = {};
+      if (query) filter.category = query;
+
+      const options = {
+        page: parseInt(page),
+        limit: parseInt(limit),
+        lean: true
+      };
+
+      if (sort) {
+        options.sort = { price: sort === "asc" ? 1 : -1 };
+      }
+
+      const result = await Product.paginate(filter, options);
+      res.json(result);
+
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
   });
 
+  
   router.get("/:pid", async (req, res) => {
-    res.json(await manager.getProductById(req.params.pid));
+    try {
+      const product = await Product.findById(req.params.pid);
+      res.json(product);
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
   });
 
+  
   router.post("/", async (req, res) => {
-    const newProduct = await manager.addProduct(req.body);
+    try {
+      const newProduct = await Product.create(req.body);
 
-    const products = await manager.getProducts();
-    io.emit("updateProducts", products);
+      const products = await Product.find().lean();
+      io.emit("updateProducts", products);
 
-    res.json(newProduct);
+      res.json(newProduct);
+
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
   });
 
+  
   router.put("/:pid", async (req, res) => {
-    res.json(await manager.updateProduct(req.params.pid, req.body));
+    try {
+      const updated = await Product.findByIdAndUpdate(
+        req.params.pid,
+        req.body,
+        { new: true }
+      );
+
+      res.json(updated);
+
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
   });
+
 
   router.delete("/:pid", async (req, res) => {
-    await manager.deleteProduct(req.params.pid);
+    try {
+      await Product.findByIdAndDelete(req.params.pid);
 
-    const products = await manager.getProducts();
-    io.emit("updateProducts", products);
+      const products = await Product.find().lean();
+      io.emit("updateProducts", products);
 
-    res.send("Eliminado");
+      res.send("Eliminado");
+
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
   });
 
   return router;

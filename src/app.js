@@ -6,6 +6,9 @@ import exphbs from "express-handlebars";
 import productsRouter from "./routes/products.router.js";
 import cartsRouter from "./routes/carts.router.js";
 import ProductManager from "./managers/ProductManager.js";
+import { connectDB } from "./config/db.js";
+
+connectDB();
 
 const app = express();
 const httpServer = createServer(app);
